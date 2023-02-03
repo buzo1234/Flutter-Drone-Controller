@@ -1,6 +1,6 @@
+import 'package:drone_controller/JoystickCodes/joystick.dart';
 import 'package:drone_controller/main.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_joystick/flutter_joystick.dart';
 
 class Ball extends StatelessWidget {
   final double x;
