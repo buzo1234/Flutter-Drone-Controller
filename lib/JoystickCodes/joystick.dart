@@ -62,6 +62,7 @@ class _JoystickState extends State<Joystick> {
   Offset _stickOffset = Offset.zero;
   Timer? _callbackTimer;
   Offset _startDragStickPosition = Offset.zero;
+  Offset renderArea = Offset.zero;
 
   @override
   void initState() {
@@ -96,7 +97,6 @@ class _JoystickState extends State<Joystick> {
   }
 
   void _stickDragStart(Offset globalPosition) {
-    print("offset st $_stickOffset");
     _runCallback();
     _startDragStickPosition = globalPosition;
     //widget.onStickDragStart?.call();
@@ -106,30 +106,38 @@ class _JoystickState extends State<Joystick> {
     final baseRenderBox =
         _baseKey.currentContext!.findRenderObject()! as RenderBox;
 
-    print('offset : $_stickOffset');
+    setState(() {
+      renderArea = baseRenderBox.localToGlobal(
+          Offset(baseRenderBox.size.width / 2, baseRenderBox.size.height / 2));
+    });
 
+    print('render area $renderArea');
+
+    print('Start : $_stickOffset');
     final stickOffset = widget.stickOffsetCalculator.calculate(
       mode: widget.mode,
-      startDragStickPosition: _startDragStickPosition,
+      startDragStickPosition: widget.isThrottle
+          ? Offset(_startDragStickPosition.dx, renderArea.dy)
+          : _startDragStickPosition,
       currentDragStickPosition: globalPosition,
       baseSize: baseRenderBox.size,
       stickOffset: _stickOffset,
     );
 
+    print('End : $stickOffset');
+
     setState(() {
-      _stickOffset = Offset(stickOffset.dx, stickOffset.dy);
+      _stickOffset = stickOffset;
     });
   }
 
   void _stickDragEnd() {
-    print("offset end $_stickOffset");
     if (widget.isThrottle) {
       setState(() {
         _stickOffset = Offset(0.0, _stickOffset.dy);
       });
 
       _callbackTimer?.cancel();
-      print('StickDragDetails : ${_stickOffset.dx} ${_stickOffset.dy}');
       //send zero offset only for YAW stick
       widget.listener(StickDragDetails(_stickOffset.dx, _stickOffset.dy));
       _startDragStickPosition = Offset.zero;

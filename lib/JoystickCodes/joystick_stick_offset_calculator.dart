@@ -24,17 +24,15 @@ class CircleStickOffsetCalculator implements StickOffsetCalculator {
     required Size baseSize,
     required Offset stickOffset,
   }) {
-    final radius = baseSize.width / 2;
-    print(
-        "start : $startDragStickPosition current : $currentDragStickPosition");
+    print("$currentDragStickPosition and  $startDragStickPosition");
+    final radius = (baseSize.width - 70) / 2;
     double x = currentDragStickPosition.dx - startDragStickPosition.dx;
     double y = currentDragStickPosition.dy - startDragStickPosition.dy;
-
-    print("startx : $x starty : $y");
 
     final isPointInCircle = x * x + y * y < radius * radius;
 
     if (!isPointInCircle) {
+      print("OUTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
       final mult = sqrt(radius * radius / (y * y + x * x));
       x *= mult;
       y *= mult;
@@ -44,7 +42,6 @@ class CircleStickOffsetCalculator implements StickOffsetCalculator {
     final yOffset = y / radius;
 
     // print('xOffset : $xOffset and yOffset : $yOffset  $throttleOffset');
-    print("start stickOffsrt : ${stickOffset.dy}");
     switch (mode) {
       case JoystickMode.all:
         return Offset(xOffset, yOffset);

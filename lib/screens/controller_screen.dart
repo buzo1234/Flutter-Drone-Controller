@@ -15,9 +15,18 @@ class _ControllerScreenState extends State<ControllerScreen> {
   double _y = 100;
   double _x2 = 100;
   double _y2 = 100;
-  String? _roll = '0', _pitch = '0';
-  String? _throttle = '0', _yaw = '0';
+  int _roll = 50, _pitch = 50;
+  int _throttle = 0, _yaw = 50;
   final JoystickMode _joystickMode = JoystickMode.all;
+
+  ///output = output_start + ((output_end - output_start) / (input_end - input_start)) * (input - input_start)
+  ///formula for changing value range
+
+  int changeRange(double input, int start, int end, int iniS, int iniE) {
+    int output =
+        (start + ((end - start) / (iniE - iniS)) * (input + 1)).toInt();
+    return output;
+  }
 
   @override
   void didChangeDependencies() {
@@ -77,8 +86,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
                 mode: _joystickMode,
                 listener: (details) {
                   setState(() {
-                    _roll = details.x.toStringAsFixed(2);
-                    _pitch = (-1 * details.y).toStringAsFixed(2);
+                    _roll = changeRange(details.x, 0, 100, -1, 1);
+                    _pitch = changeRange(-1 * details.y, 0, 100, -1, 1);
                     _x = _x + step * details.x;
                     _y = _y + step * details.y;
                   });
@@ -88,7 +97,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
             Align(
               alignment: const Alignment(-0.8, 0),
               child: Joystick(
-                isThrottle:true,
+                isThrottle: true,
                 stick: Container(
                   height: 75,
                   width: 75,
@@ -98,8 +107,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
                 mode: _joystickMode,
                 listener: (details) {
                   setState(() {
-                    _yaw = details.x.toStringAsFixed(2);
-                    _throttle = (-1 * details.y).toStringAsFixed(2);
+                    _yaw = changeRange(details.x, 0, 100, -1, 1);
+                    _throttle = changeRange(-1 * details.y, 0, 255, -1, 1);
                     _x2 = _x2 + step * details.x;
                     _y2 = _y2 + step * details.y;
                   });
