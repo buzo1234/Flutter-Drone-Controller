@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:drone_controller/JoystickCodes/joystick.dart';
 import 'package:drone_controller/Utility/JoystickUtility.dart';
 import 'package:drone_controller/main.dart';
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/io.dart';
 
 class ControllerScreen extends StatefulWidget {
   const ControllerScreen({super.key});
@@ -18,6 +21,10 @@ class _ControllerScreenState extends State<ControllerScreen> {
   int _roll = 50, _pitch = 50;
   int _throttle = 0, _yaw = 50;
   final JoystickMode _joystickMode = JoystickMode.all;
+  IOWebSocketChannel? channel;
+  bool connected = false;
+  Timer? timer;
+  String command = "";
 
   ///output = output_start + ((output_end - output_start) / (input_end - input_start)) * (input - input_start)
   ///formula for changing value range
@@ -36,6 +43,60 @@ class _ControllerScreenState extends State<ControllerScreen> {
   }
 
   @override
+  void initState() {
+    command = "$_roll : $_pitch : $_throttle : $_yaw";
+    connected = false; //initially connection status is "NO" so its FALSE
+
+    Future.delayed(Duration.zero, () async {
+      channelconnect(); //connect to WebSocket wth NodeMCU
+    });
+    timer = Timer.periodic(
+        const Duration(milliseconds: 250), (Timer t) => sendcmd(command));
+    super.initState();
+  }
+
+  channelconnect() {
+    //function to connect
+    try {
+      channel =
+          IOWebSocketChannel.connect("ws://192.168.0.1:81"); //channel IP : Port
+      channel!.stream.listen(
+        (message) {
+          print(message);
+          setState(() {
+            if (message == "connected") {
+              connected = true; //message is "connected" from NodeMCU
+            }
+          });
+        },
+        onDone: () {
+          //if WebSocket is disconnected
+          print("Web socket is closed");
+          setState(() {
+            connected = false;
+          });
+        },
+        onError: (error) {
+          print(error.toString());
+        },
+      );
+    } catch (_) {
+      print("error on connecting to websocket.");
+    }
+  }
+
+  Future<void> sendcmd(String cmd) async {
+    print("Entered $cmd");
+    if (connected == true) {
+      channel!.sink.add(cmd); //sending Command to NodeMCU
+
+    } else {
+      channelconnect();
+      print("Websocket is not connected.");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -43,10 +104,15 @@ class _ControllerScreenState extends State<ControllerScreen> {
         actions: [
           IconButton(
               onPressed: () {},
-              icon: const Icon(
-                Icons.settings,
-                color: Colors.blue,
-              ))
+              icon: connected
+                  ? const Icon(
+                      Icons.wifi,
+                      color: Colors.green,
+                    )
+                  : const Icon(
+                      Icons.wifi_off,
+                      color: Colors.red,
+                    ))
         ],
         elevation: 0,
         backgroundColor: Colors.white,
@@ -90,6 +156,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
                     _pitch = changeRange(-1 * details.y, 0, 100, -1, 1);
                     _x = _x + step * details.x;
                     _y = _y + step * details.y;
+                    command =
+                        "${changeRange(details.x, 0, 100, -1, 1)} : ${changeRange(-1 * details.y, 0, 100, -1, 1)} : $_throttle : $_yaw";
                   });
                 },
               ),
@@ -111,6 +179,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
                     _throttle = changeRange(-1 * details.y, 0, 255, -1, 1);
                     _x2 = _x2 + step * details.x;
                     _y2 = _y2 + step * details.y;
+                    command =
+                        "$_roll : $_pitch : ${changeRange(-1 * details.y, 0, 255, -1, 1)} : ${changeRange(details.x, 0, 100, -1, 1)}";
                   });
                 },
               ),
