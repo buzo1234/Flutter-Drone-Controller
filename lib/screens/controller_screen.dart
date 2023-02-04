@@ -44,7 +44,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
 
   @override
   void initState() {
-    command = "$_roll : $_pitch : $_throttle : $_yaw";
+    command = "$_roll:$_pitch:$_throttle:$_yaw";
     connected = false; //initially connection status is "NO" so its FALSE
 
     Future.delayed(Duration.zero, () async {
@@ -157,7 +157,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                     _x = _x + step * details.x;
                     _y = _y + step * details.y;
                     command =
-                        "${changeRange(details.x, 0, 100, -1, 1)} : ${changeRange(-1 * details.y, 0, 100, -1, 1)} : $_throttle : $_yaw";
+                        "${changeRange(details.x, 0, 100, -1, 1)}:${changeRange(-1 * details.y, 0, 100, -1, 1)}:$_throttle:$_yaw";
                   });
                 },
               ),
@@ -176,11 +176,11 @@ class _ControllerScreenState extends State<ControllerScreen> {
                 listener: (details) {
                   setState(() {
                     _yaw = changeRange(details.x, 0, 100, -1, 1);
-                    _throttle = changeRange(-1 * details.y, 0, 255, -1, 1);
+                    _throttle = changeRange(-1 * details.y, 0, 250, -1, 1);
                     _x2 = _x2 + step * details.x;
                     _y2 = _y2 + step * details.y;
                     command =
-                        "$_roll : $_pitch : ${changeRange(-1 * details.y, 0, 255, -1, 1)} : ${changeRange(details.x, 0, 100, -1, 1)}";
+                        "$_roll:$_pitch:${changeRange(-1 * details.y, 0, 255, -1, 1)}:${changeRange(details.x, 0, 100, -1, 1)}";
                   });
                 },
               ),
