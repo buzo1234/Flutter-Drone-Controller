@@ -35,10 +35,16 @@ class _ControllerScreenState extends State<ControllerScreen> {
     return output;
   }
 
-  void _sendMessage(String message) async {
+  void _sendMessage() async {
+    setState(() {
+      command = String.fromCharCode(_roll) +
+          String.fromCharCode(_pitch) +
+          String.fromCharCode(_throttle) +
+          String.fromCharCode(_yaw);
+    });
     final udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
 
-    udpSocket.send(utf8.encode(message), InternetAddress('192.168.4.1'), 8888);
+    udpSocket.send(utf8.encode(command), InternetAddress('192.168.4.1'), 8888);
   }
 
   @override
@@ -66,7 +72,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
         actions: [
           IconButton(
               onPressed: () {
-                _sendMessage(command);
+                _sendMessage();
               },
               icon: connected
                   ? const Icon(
@@ -118,10 +124,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
                     _pitch = changeRange(-1 * details.y, 0, 100, -1, 1);
                     _x = _x + step * details.x;
                     _y = _y + step * details.y;
-                    command =
-                        "${changeRange(details.x, 0, 100, -1, 1)}:${changeRange(-1 * details.y, 0, 100, -1, 1)}:$_throttle:$_yaw";
                   });
-                  _sendMessage(command);
+                  _sendMessage();
                 },
               ),
             ),
@@ -142,10 +146,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
                     _throttle = changeRange(-1 * details.y, -4, 1200, -1, 1);
                     _x2 = _x2 + step * details.x;
                     _y2 = _y2 + step * details.y;
-                    command =
-                        "$_roll:$_pitch:${changeRange(-1 * details.y, -4, 1200, -1, 1)}:${changeRange(details.x, 0, 100, -1, 1)}";
                   });
-                  _sendMessage(command);
+                  _sendMessage();
                 },
               ),
             ),
