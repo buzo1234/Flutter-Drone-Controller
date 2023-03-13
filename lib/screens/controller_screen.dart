@@ -143,7 +143,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                 listener: (details) {
                   setState(() {
                     _yaw = changeRange(details.x, 0, 100, -1, 1);
-                    _throttle = changeRange(-1 * details.y, -4, 1200, -1, 1);
+                    _throttle = changeRange(-1 * details.y, -2, 100, -1, 1);
                     _x2 = _x2 + step * details.x;
                     _y2 = _y2 + step * details.y;
                   });
