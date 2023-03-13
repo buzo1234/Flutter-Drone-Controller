@@ -1,10 +1,10 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:convert';
 
 import 'package:drone_controller/JoystickCodes/joystick.dart';
-import 'package:drone_controller/Utility/JoystickUtility.dart';
 import 'package:drone_controller/main.dart';
 import 'package:flutter/material.dart';
-import 'package:web_socket_channel/io.dart';
 
 class ControllerScreen extends StatefulWidget {
   const ControllerScreen({super.key});
@@ -21,10 +21,10 @@ class _ControllerScreenState extends State<ControllerScreen> {
   int _roll = 50, _pitch = 50;
   int _throttle = 0, _yaw = 50;
   final JoystickMode _joystickMode = JoystickMode.all;
-  IOWebSocketChannel? channel;
   bool connected = false;
   Timer? timer;
   String command = "";
+  int portIListenOn = 5514; //0 is random
 
   ///output = output_start + ((output_end - output_start) / (input_end - input_start)) * (input - input_start)
   ///formula for changing value range
@@ -33,6 +33,12 @@ class _ControllerScreenState extends State<ControllerScreen> {
     int output =
         (start + ((end - start) / (iniE - iniS)) * (input + 1)).toInt();
     return output;
+  }
+
+  void _sendMessage(String message) async {
+    final udpSocket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+
+    udpSocket.send(utf8.encode(message), InternetAddress('192.168.4.1'), 8888);
   }
 
   @override
@@ -44,56 +50,12 @@ class _ControllerScreenState extends State<ControllerScreen> {
 
   @override
   void initState() {
-    command = "$_roll:$_pitch:$_throttle:$_yaw";
+    command = "";
     connected = false; //initially connection status is "NO" so its FALSE
 
-    Future.delayed(Duration.zero, () async {
-      channelconnect(); //connect to WebSocket wth NodeMCU
-    });
-    timer = Timer.periodic(
-        const Duration(milliseconds: 250), (Timer t) => sendcmd(command));
+    //timer = Timer.periodic(
+    //   const Duration(milliseconds: 250), (Timer t) => sendcmd(command));
     super.initState();
-  }
-
-  channelconnect() {
-    //function to connect
-    try {
-      channel =
-          IOWebSocketChannel.connect("ws://192.168.0.1:81"); //channel IP : Port
-      channel!.stream.listen(
-        (message) {
-          print(message);
-          setState(() {
-            if (message == "connected") {
-              connected = true; //message is "connected" from NodeMCU
-            }
-          });
-        },
-        onDone: () {
-          //if WebSocket is disconnected
-          print("Web socket is closed");
-          setState(() {
-            connected = false;
-          });
-        },
-        onError: (error) {
-          print(error.toString());
-        },
-      );
-    } catch (_) {
-      print("error on connecting to websocket.");
-    }
-  }
-
-  Future<void> sendcmd(String cmd) async {
-    print("Entered $cmd");
-    if (connected == true) {
-      channel!.sink.add(cmd); //sending Command to NodeMCU
-
-    } else {
-      channelconnect();
-      print("Websocket is not connected.");
-    }
   }
 
   @override
@@ -103,7 +65,9 @@ class _ControllerScreenState extends State<ControllerScreen> {
       appBar: AppBar(
         actions: [
           IconButton(
-              onPressed: () {},
+              onPressed: () {
+                _sendMessage(command);
+              },
               icon: connected
                   ? const Icon(
                       Icons.wifi,
@@ -116,9 +80,9 @@ class _ControllerScreenState extends State<ControllerScreen> {
         ],
         elevation: 0,
         backgroundColor: Colors.white,
-        title: const Text(
-          'PyiTechnologies',
-          style: TextStyle(color: Colors.blue),
+        title: Image.asset(
+          'assets/logo_nobg.png',
+          width: 75.0,
         ),
       ),
       body: SafeArea(
@@ -127,8 +91,6 @@ class _ControllerScreenState extends State<ControllerScreen> {
             Container(
               color: Colors.white,
             ),
-            Ball(_x, _y),
-            Ball(_x2, _y2),
             Positioned(
               top: 15,
               right: 10,
@@ -159,6 +121,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                     command =
                         "${changeRange(details.x, 0, 100, -1, 1)}:${changeRange(-1 * details.y, 0, 100, -1, 1)}:$_throttle:$_yaw";
                   });
+                  _sendMessage(command);
                 },
               ),
             ),
@@ -176,12 +139,13 @@ class _ControllerScreenState extends State<ControllerScreen> {
                 listener: (details) {
                   setState(() {
                     _yaw = changeRange(details.x, 0, 100, -1, 1);
-                    _throttle = changeRange(-1 * details.y, 0, 250, -1, 1);
+                    _throttle = changeRange(-1 * details.y, -4, 1200, -1, 1);
                     _x2 = _x2 + step * details.x;
                     _y2 = _y2 + step * details.y;
                     command =
-                        "$_roll:$_pitch:${changeRange(-1 * details.y, 0, 255, -1, 1)}:${changeRange(details.x, 0, 100, -1, 1)}";
+                        "$_roll:$_pitch:${changeRange(-1 * details.y, -4, 1200, -1, 1)}:${changeRange(details.x, 0, 100, -1, 1)}";
                   });
+                  _sendMessage(command);
                 },
               ),
             ),
