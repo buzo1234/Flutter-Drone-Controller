@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:drone_controller/JoystickCodes/joystick.dart';
 import 'package:drone_controller/main.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_swipe_button/flutter_swipe_button.dart';
+import 'package:battery_indicator/battery_indicator.dart';
 
 class ControllerScreen extends StatefulWidget {
   const ControllerScreen({super.key});
@@ -25,6 +27,8 @@ class _ControllerScreenState extends State<ControllerScreen> {
   Timer? timer;
   String command = "";
   int portIListenOn = 5514; //0 is random
+
+  bool isArmed = false;
 
   ///output = output_start + ((output_end - output_start) / (input_end - input_start)) * (input - input_start)
   ///formula for changing value range
@@ -56,6 +60,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
 
   @override
   void initState() {
+    isArmed = false;
     command = "";
     connected = false; //initially connection status is "NO" so its FALSE
 
@@ -70,6 +75,37 @@ class _ControllerScreenState extends State<ControllerScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         actions: [
+          Container(
+            height: 40.0,
+            margin: const EdgeInsets.symmetric(vertical: 7.0),
+            child: Stack(alignment: Alignment.center, children: [
+              Positioned(
+                child: Container(
+                  margin: const EdgeInsets.only(right: 2),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100.0),
+                      color: Colors.grey[400]),
+                  height: 17.0,
+                  width: 17.0,
+                ),
+              ),
+              Align(
+                alignment: const Alignment(0, 0),
+                child: BatteryIndicator(
+                  batteryFromPhone: false,
+                  batteryLevel: 50,
+                  style: BatteryIndicatorStyle.values[1],
+                  colorful: true,
+                  percentNumSize: 12.0,
+                  showPercentNum: true,
+                  mainColor: Colors.blue,
+                  size: 25.0,
+                  ratio: 2.0,
+                  showPercentSlide: true,
+                ),
+              ),
+            ]),
+          ),
           IconButton(
               onPressed: () {
                 _sendMessage();
@@ -93,6 +129,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
       ),
       body: SafeArea(
         child: Stack(
+          alignment: Alignment.center,
           children: [
             Container(
               color: Colors.white,
@@ -106,6 +143,76 @@ class _ControllerScreenState extends State<ControllerScreen> {
               top: 0,
               right: 10,
               child: Text("Throttle: $_throttle , Yaw: $_yaw"),
+            ),
+            Positioned(
+              bottom: 20,
+              child: SwipeButton(
+                width: 200,
+                thumb: const Icon(
+                  Icons.arrow_forward,
+                  color: Colors.white,
+                ),
+                activeTrackColor:
+                    isArmed ? Colors.green[300] : Colors.blue[300],
+                activeThumbColor: isArmed ? Colors.green : Colors.blue,
+                child: Container(
+                  margin: const EdgeInsets.only(left: 20.0),
+                  child: Text(
+                    isArmed ? "Swipe to DisArm" : "Swipe to Arm",
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                onSwipe: () async {
+                  //bool? hasVib = await Vibration.hasVibrator();
+
+                  if (_throttle <= 0) {
+                    setState(() {
+                      _throttle = 0;
+                      _yaw = 50;
+                      _roll = 50;
+                      _pitch = 50;
+                    });
+
+                    _sendMessage();
+
+                    if (isArmed) {
+                      setState(() {
+                        isArmed = false;
+                      });
+                    } else {
+                      setState(() {
+                        isArmed = true;
+                      });
+                    }
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          isArmed
+                              ? "Drone is Armed, and READY TO FLY ✈️"
+                              : "Drone is Dis-Armed ",
+                        ),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          "Please zero down the Throttle",
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+
+                  /* if (hasVib!) {
+                    Vibration.vibrate(duration: 200);
+                  } */
+                },
+              ),
             ),
             Align(
               alignment: const Alignment(0.8, 0),
@@ -125,7 +232,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                     _x = _x + step * details.x;
                     _y = _y + step * details.y;
                   });
-                  _sendMessage();
+                  isArmed ? _sendMessage() : null;
                 },
               ),
             ),
@@ -147,7 +254,7 @@ class _ControllerScreenState extends State<ControllerScreen> {
                     _x2 = _x2 + step * details.x;
                     _y2 = _y2 + step * details.y;
                   });
-                  _sendMessage();
+                  isArmed ? _sendMessage() : null;
                 },
               ),
             ),

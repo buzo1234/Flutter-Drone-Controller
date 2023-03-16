@@ -111,9 +111,6 @@ class _JoystickState extends State<Joystick> {
           Offset(baseRenderBox.size.width / 2, baseRenderBox.size.height / 2));
     });
 
-    print('render area $renderArea');
-
-    print('Start : $_stickOffset');
     final stickOffset = widget.stickOffsetCalculator.calculate(
       mode: widget.mode,
       startDragStickPosition: widget.isThrottle
@@ -123,8 +120,6 @@ class _JoystickState extends State<Joystick> {
       baseSize: baseRenderBox.size,
       stickOffset: _stickOffset,
     );
-
-    print('End : $stickOffset');
 
     setState(() {
       _stickOffset = stickOffset;

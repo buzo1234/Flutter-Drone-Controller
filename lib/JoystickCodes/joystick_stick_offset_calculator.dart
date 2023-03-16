@@ -24,7 +24,6 @@ class CircleStickOffsetCalculator implements StickOffsetCalculator {
     required Size baseSize,
     required Offset stickOffset,
   }) {
-    print("$currentDragStickPosition and  $startDragStickPosition");
     final radius = (baseSize.width - 70) / 2;
     double x = currentDragStickPosition.dx - startDragStickPosition.dx;
     double y = currentDragStickPosition.dy - startDragStickPosition.dy;
@@ -32,7 +31,6 @@ class CircleStickOffsetCalculator implements StickOffsetCalculator {
     final isPointInCircle = x * x + y * y < radius * radius;
 
     if (!isPointInCircle) {
-      print("OUTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
       final mult = sqrt(radius * radius / (y * y + x * x));
       x *= mult;
       y *= mult;
