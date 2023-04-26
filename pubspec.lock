@@ -315,13 +315,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.2"
-  vibration:
-    dependency: "direct main"
-    description:
-      name: vibration
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.7.6"
   web_socket_channel:
     dependency: "direct main"
     description:
@@ -329,13 +322,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.3.0"
-  wifi:
-    dependency: "direct main"
-    description:
-      name: wifi
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.5"
   xml:
     dependency: transitive
     description:
