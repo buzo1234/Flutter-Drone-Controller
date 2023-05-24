@@ -13,8 +13,8 @@ class JoystickBase extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 200,
-      height: 200,
+      width: 280,
+      height: 280,
       decoration: const BoxDecoration(
         color: Colors.transparent,
         shape: BoxShape.circle,
@@ -33,14 +33,14 @@ class _JoystickBasePainter extends CustomPainter {
 
   final _borderPaint = Paint()
     ..color = const Color(0x50616161)
-    ..strokeWidth = 10
+    ..strokeWidth = 3
     ..style = PaintingStyle.stroke;
   final _centerPaint = Paint()
-    ..color = const Color(0x50616161)
+    ..color = const Color.fromARGB(227, 65, 107, 233)
     ..style = PaintingStyle.fill;
   final _linePaint = Paint()
     ..color = const Color(0x50616161)
-    ..strokeWidth = 5
+    ..strokeWidth = 2
     ..style = PaintingStyle.stroke;
 
   @override
@@ -48,10 +48,10 @@ class _JoystickBasePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.width / 2);
     final radius = size.width / 2;
     canvas.drawCircle(center, radius, _borderPaint);
-    canvas.drawCircle(center, radius - 12, _centerPaint);
-    canvas.drawCircle(center, radius - 60, _centerPaint);
+    //canvas.drawCircle(center, radius - 12, _centerPaint);
+    canvas.drawCircle(center, radius - 70, _centerPaint);
 
-    if (mode != JoystickMode.horizontal) {
+    /* if (mode != JoystickMode.horizontal) {
       // draw vertical arrows
       canvas.drawLine(Offset(center.dx - 30, center.dy - 50),
           Offset(center.dx, center.dy - 70), _linePaint);
@@ -73,7 +73,7 @@ class _JoystickBasePainter extends CustomPainter {
           Offset(center.dx + 70, center.dy), _linePaint);
       canvas.drawLine(Offset(center.dx + 50, center.dy + 30),
           Offset(center.dx + 70, center.dy), _linePaint);
-    }
+    } */
   }
 
   @override
