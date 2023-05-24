@@ -1,16 +1,12 @@
 # drone_controller
 
-A new Flutter project.
+## Here are some screenshots of the app
 
-## Getting Started
+## Unarmed State<br>
+![unarmed_controller](images/1.jpg)<br>
 
-This project is a starting point for a Flutter application.
+## Armed State<br>
+![armed_state](images/2.jpg)<br>
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Error State<br>
+![error_state](images/3.jpg)
